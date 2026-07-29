@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서울바른후치과</title>
+  <style>
+    :root {
+      --white:   #ffffff;
+      --navy:    #2d4a3e;   /* 딥 포레스트 그린 */
+      --sky:     #c9957f;   /* 은은한 더스티 테라코타 */
+      --sky-light: #e8cfc4; /* 연한 테라코타 — 배경용 */
+      --light:   #f7f5f1;   /* 따뜻한 크림 */
+      --ink:     #2b2420;   /* 따뜻한 다크 브라운 */
+      --muted:   #9a8f8a;   /* 웜 그레이 */
+      --dark-bg: #1e2e27;   /* 딥 포레스트 다크 */
+      --teal:    #4a7c6f;   /* 미디엄 포레스트 */
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont,
+        'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--ink);
+      background: var(--white);
+    }
+
+    /* ─── 맨 위 메뉴 줄 ─── */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      z-index: 300;
+      transition: background 0.25s, box-shadow 0.25s;
+    }
+    .topbar.scrolled {
+      background: rgba(255,255,255,0.97);
+      box-shadow: 0 1px 10px rgba(0,0,0,0.08);
+    }
+
+    .menu-btn {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 8px 8px 0;
+    }
+    .menu-btn span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--white);
+      border-radius: 1px;
+      transition: background 0.25s;
+    }
+    .topbar.scrolled .menu-btn span { background: var(--navy); }
+
+    .menu-label {
+      font-size: 13px;
+      color: var(--white);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      margin-left: 6px;
+      transition: color 0.25s;
+    }
+    .topbar.scrolled .menu-label { color: var(--navy); }
+
+    .menu-left { display: flex; align-items: center; }
+
+    .logo {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      text-decoration: none;
+      line-height: 1;
+    }
+    .logo-main {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -0.01em;
+      transition: color 0.25s;
+    }
+    .logo-main em { color: var(--sky); font-style: normal; }
+    .topbar.scrolled .logo-main { color: var(--navy); }
+    .logo-sub {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      color: rgba(255,255,255,0.6);
+      margin-top: 4px;
+      text-transform: uppercase;
+      transition: color 0.25s;
+    }
+    .topbar.scrolled .logo-sub { color: var(--muted); }
+    .logo-btn:focus-visible {
+      outline: 3px solid var(--sky);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+    .menu-btn:focus-visible {
+      outline: 3px solid var(--sky);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+
+    /* ─── 메뉴 패널 ─── */
+    .nav-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: flex;
+      pointer-events: none;
+    }
+    .nav-panel.open { pointer-events: auto; }
+
+    /* 반투명 뒷배경 */
+    .nav-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      transition: background 0.35s;
+    }
+    .nav-panel.open .nav-backdrop { background: rgba(0,0,0,0.45); }
+
+    /* 왼쪽에서 밀려나오는 서랍 */
+    .nav-drawer {
+      position: relative;
+      width: min(320px, 85vw);
+      height: 100%;
+      background: var(--white);
+      transform: translateX(-100%);
+      transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .nav-panel.open .nav-drawer { transform: translateX(0); }
+
+    /* 서랍 안 — 맨 위 닫기 */
+    .nav-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--light);
+    }
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--navy);
+      letter-spacing: -0.01em;
+    }
+    .nav-logo em { color: var(--sky); font-style: normal; }
+    .nav-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: var(--navy);
+      transition: background 0.15s;
+    }
+    .nav-close:hover { background: var(--light); }
+    .nav-close:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
+
+    /* 카테고리 */
+    .nav-category {
+      padding: 24px 24px 8px;
+    }
+    .nav-category-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--sky);
+      margin-bottom: 10px;
+    }
+    .nav-items { list-style: none; margin: 0; padding: 0; }
+    .nav-items li a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy);
+      text-decoration: none;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-items li a:hover { background: var(--light); color: var(--sky); }
+    .nav-items li a:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
+    .nav-items li a svg { flex-shrink: 0; opacity: 0.55; }
+
+    /* 카테고리 구분선 */
+    .nav-divider { height: 1px; background: var(--light); margin: 8px 24px; }
+
+    /* 맨 아래 연락처 */
+    .nav-footer {
+      margin-top: auto;
+      padding: 20px 24px;
+      background: var(--light);
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .nav-footer strong { display: block; color: var(--navy); font-weight: 700; margin-bottom: 4px; }
+
+    /* ─── 첫 화면 큰 사진 ─── */
+    .hero {
+      height: 100vh;
+      min-height: 600px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 사진 자리 — 나중에 실제 이미지로 교체 */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, #d4c8b8 0%, #c2b5a3 50%, #a89888 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-bg-label {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.3);
+      position: absolute;
+      bottom: 14px;
+      left: 18px;
+    }
+    /* 어두운 오버레이 */
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom,
+        rgba(30,46,39,0.32) 0%,
+        rgba(30,46,39,0.12) 40%,
+        rgba(30,46,39,0.42) 100%);
+    }
+
+    /* 가운데 로고 오버레이 */
+    .hero-center {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+    .hero-name {
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      line-height: 1.0;
+      text-shadow: 0 2px 28px rgba(15,28,55,0.3);
+    }
+    .hero-name em { color: var(--sky); font-style: normal; }
+    .hero-tagline {
+      margin-top: 14px;
+      font-size: clamp(11px, 1.4vw, 14px);
+      letter-spacing: 0.32em;
+      color: rgba(255,255,255,0.7);
+      text-transform: uppercase;
+    }
+
+    /* 오른쪽 인증 뱃지 */
+    .hero-badges {
+      position: absolute;
+      right: 52px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .badge {
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border-radius: 8px;
+      padding: 8px 18px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--navy);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.14);
+      text-align: center;
+      min-width: 96px;
+      letter-spacing: 0.03em;
+    }
+    .badge span {
+      display: block;
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* 스크롤 힌트 */
+    .scroll-hint {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .scroll-hint::after {
+      content: '';
+      width: 1px;
+      height: 30px;
+      background: rgba(255,255,255,0.4);
+      display: block;
+      animation: scrollLine 1.8s ease-in-out infinite;
+    }
+    @keyframes scrollLine {
+      0%   { opacity: 0; transform: scaleY(0); transform-origin: top; }
+      50%  { opacity: 1; transform: scaleY(1); transform-origin: top; }
+      100% { opacity: 0; transform: scaleY(1); transform-origin: bottom; }
+    }
+
+    /* ─── 오른쪽 플로팅 버튼 ─── */
+    .float-btns {
+      position: fixed;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 400;
+    }
+    .float-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.22);
+      transition: transform 0.15s, box-shadow 0.15s;
+      cursor: pointer;
+      border: none;
+    }
+    .float-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 18px rgba(0,0,0,0.28);
+    }
+    .float-btn:focus-visible {
+      outline: 3px solid var(--sky);
+      outline-offset: 3px;
+      transform: scale(1.1);
+    }
+    .float-btn.kakao    { background: #FEE500; }
+    .float-btn.reserve  { background: #03C75A; }
+    .float-btn.location { background: #E8342A; }
+
+    /* ─── 맨 아래 정보 칸 ─── */
+    .footer-info {
+      background: var(--navy);
+      color: var(--white);
+      padding: 72px 40px 56px;
+    }
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+    }
+
+    .info-label {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: rgba(255,255,255,0.45);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      font-weight: 600;
+    }
+
+    .hours-table { width: 100%; border-collapse: collapse; }
+    .hours-table tr { border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .hours-table tr:last-child { border-bottom: none; }
+    .hours-table td {
+      padding: 12px 0;
+      font-size: 15px;
+    }
+    .hours-table td:first-child { color: rgba(255,255,255,0.6); }
+    .hours-table td:last-child  {
+      text-align: right;
+      font-weight: 700;
+      color: var(--white);
+    }
+    .hours-table .closed td    { color: rgba(255,255,255,0.28) !important; }
+
+    .address-block { line-height: 1.9; }
+    .address-block strong {
+      display: block;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .address-block p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+    }
+    .phone-num {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      color: var(--white);
+      margin-top: 22px;
+    }
+
+    /* 지도 자리 */
+    .map-area {
+      margin-top: 26px;
+      width: 100%;
+      height: 180px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.3);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+    }
+
+    /* 저작권 줄 */
+    .footer-bottom {
+      background: #141e1b;
+      color: rgba(255,255,255,0.32);
+      font-size: 12px;
+      text-align: center;
+      padding: 22px 20px;
+      line-height: 2;
+    }
+
+    /* ─── 반응형 ─── */
+    @media (max-width: 768px) {
+      .hero-badges  { display: none; }
+      .footer-inner { grid-template-columns: 1fr; gap: 44px; }
+      .footer-info  { padding: 52px 24px 40px; }
+      .float-btns   { right: 10px; }
+      .float-btn    { width: 46px; height: 46px; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 0 16px; }
+    }
+
+    /* ─── About Us ─── */
+    .about {
+      padding: 100px 40px;
+      background: var(--white);
+    }
+    .section-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .section-tag {
+      font-size: 11px;
+      letter-spacing: 0.26em;
+      color: var(--sky);
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .section-heading {
+      font-size: clamp(26px, 3.5vw, 42px);
+      font-weight: 900;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+    .section-lead {
+      font-size: 17px;
+      color: #4a5568;
+      max-width: 640px;
+      line-height: 1.8;
+      margin-bottom: 56px;
+    }
+
+    /* 구성원 카드 */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 28px;
+    }
+    .team-card {
+      background: var(--light);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .team-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .team-photo {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: #ddd5c8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .team-photo svg { opacity: 0.35; }
+    .team-info {
+      padding: 16px 18px 20px;
+    }
+    .team-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--navy);
+    }
+    .team-role {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── 디지털 치과 ─── */
+    .digital {
+      padding: 100px 40px;
+      background: var(--navy);
+    }
+    .digital .section-heading { color: var(--white); }
+    .digital .section-lead    { color: rgba(255,255,255,0.65); }
+    .digital .section-tag     { color: var(--sky-light); }
+
+    .digital-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 24px;
+    }
+    .digital-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 32px 28px 36px;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .digital-card:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-3px);
+    }
+    .digital-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--sky);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .digital-card h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 10px;
+    }
+    .digital-card p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.7;
+    }
+
+    /* ─── 예방관리 ─── */
+    .prevention {
+      padding: 100px 40px;
+      background: var(--light);
+    }
+    .prevention-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .prevention-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .step {
+      display: flex;
+      gap: 20px;
+      padding: 28px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      position: relative;
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--teal);
+      color: var(--white);
+      font-size: 14px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+    .step-body h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .step-body p {
+      font-size: 14px;
+      color: #4a5568;
+      line-height: 1.7;
+    }
+    .prevention-visual {
+      background: linear-gradient(135deg, #ede8e3 0%, #d9cfc8 100%);
+      border-radius: 20px;
+      aspect-ratio: 4/5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .prevention-visual span {
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      color: rgba(0,0,0,0.3);
+    }
+
+    /* ─── 임플란트 ─── */
+    .implant {
+      padding: 100px 40px;
+      background: var(--white);
+    }
+    .implant-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: start;
+      margin-top: 16px;
+    }
+    .implant-desc {
+      font-size: 15px;
+      color: #4a5568;
+      line-height: 1.9;
+      margin-bottom: 36px;
+    }
+    .implant-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .implant-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 15px;
+      color: var(--ink);
+    }
+    .implant-features li::before {
+      content: '';
+      flex-shrink: 0;
+      margin-top: 6px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--sky);
+    }
+    .implant-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .implant-card {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--sky-light);
+    }
+    .implant-card-head {
+      background: var(--navy);
+      color: var(--white);
+      padding: 16px 22px;
+      font-weight: 800;
+      font-size: 15px;
+    }
+    .implant-card-body {
+      padding: 18px 22px;
+      background: var(--light);
+      font-size: 14px;
+      color: #4a5568;
+      line-height: 1.7;
+    }
+
+    .cta-row {
+      margin-top: 36px;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--sky);
+      color: var(--white);
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.15s;
+      cursor: pointer;
+      border: none;
+      min-height: 44px;
+    }
+    .btn-primary:hover  { background: #b07d68; transform: translateY(-1px); }
+    .btn-primary:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--navy);
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      border: 2px solid var(--navy);
+      transition: background 0.15s, color 0.15s;
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .btn-outline:hover { background: var(--navy); color: var(--white); }
+    .btn-outline:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+
+    /* ─── 반응형 ─── */
+    @media (max-width: 900px) {
+      .prevention-layout { grid-template-columns: 1fr; gap: 40px; }
+      .prevention-visual  { aspect-ratio: 16/7; }
+      .implant-grid       { grid-template-columns: 1fr; gap: 36px; }
+    }
+    @media (max-width: 768px) {
+      .about, .digital, .prevention, .implant { padding: 72px 24px; }
+      .digital-grid  { grid-template-columns: 1fr 1fr; }
+      .team-grid     { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .digital-grid  { grid-template-columns: 1fr; }
+      .team-grid     { grid-template-columns: 1fr 1fr; }
+      .implant-grid  { gap: 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ① 맨 위 메뉴 줄 -->
+  <header class="topbar" id="topbar">
+    <div class="menu-left">
+      <button class="menu-btn" aria-label="메뉴 열기">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="menu-label">메뉴</span>
+    </div>
+
+    <a href="#" class="logo logo-btn" aria-label="홈으로">
+      <div class="logo-main"><em>서울바른후</em>치과</div>
+      <span class="logo-sub">Dental Clinic</span>
+    </a>
+  </header>
+
+  <!-- 메뉴 패널 -->
+  <div class="nav-panel" id="navPanel" role="dialog" aria-modal="true" aria-label="메뉴">
+    <div class="nav-backdrop" id="navBackdrop"></div>
+    <div class="nav-drawer" id="navDrawer">
+
+      <!-- 서랍 맨 위 -->
+      <div class="nav-header">
+        <span class="nav-logo"><em>서울바른후</em>치과</span>
+        <button class="nav-close" id="navClose" aria-label="메뉴 닫기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 카테고리 1: 치과 안내 -->
+      <div class="nav-category">
+        <p class="nav-category-label">치과 안내</p>
+        <ul class="nav-items">
+          <li>
+            <a href="#about">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              About Us — 치과 소개
+            </a>
+          </li>
+          <li>
+            <a href="#about">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/></svg>
+              의료진 소개
+            </a>
+          </li>
+          <li>
+            <a href="#footer-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg>
+              오시는 길
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <!-- 카테고리 2: 클리닉 안내 -->
+      <div class="nav-category">
+        <p class="nav-category-label">클리닉 안내</p>
+        <ul class="nav-items">
+          <li>
+            <a href="#digital">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 6V4M16 6V4M2 10h20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              첨단 디지털 클리닉
+            </a>
+          </li>
+          <li>
+            <a href="#prevention">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" stroke="currentColor" stroke-width="1.6"/></svg>
+              평생 예방관리 클리닉
+            </a>
+          </li>
+          <li>
+            <a href="#implant">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v18M9 5h6M8 9h8M9 13h6M10 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              임플란트
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 맨 아래 빠른 연락 -->
+      <div class="nav-footer">
+        <strong>서울바른후치과</strong>
+        전화: 0○-○○○○-○○○○
+      </div>
+
+    </div><!-- /nav-drawer -->
+  </div><!-- /nav-panel -->
+
+  <!-- ② 첫 화면 큰 사진 -->
+  <section class="hero" aria-label="병원 메인">
+    <div class="hero-bg" role="img" aria-label="병원 내부 사진 자리">
+      <span class="hero-bg-label">병원 사진 자리</span>
+    </div>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-center">
+      <div class="hero-name"><em>서울바른후</em>치과</div>
+      <div class="hero-tagline">온 가족의 평생 치과</div>
+    </div>
+
+    <!-- 오른쪽 인증 뱃지 — 실제 인증으로 교체 -->
+    <div class="hero-badges" aria-hidden="true">
+      <div class="badge">인증기관 1<span>협력기관</span></div>
+      <div class="badge">인증기관 2<span>협력기관</span></div>
+    </div>
+
+    <div class="scroll-hint" aria-hidden="true">scroll</div>
+  </section>
+
+  <!-- ③ 오른쪽 플로팅 버튼 -->
+  <nav class="float-btns" aria-label="빠른 연결">
+    <a href="#" class="float-btn kakao" aria-label="카카오 상담톡">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 3C6.477 3 2 6.925 2 11.75c0 3.04 1.796 5.71 4.5 7.29L5.5 22l4.13-2.06A11.62 11.62 0 0012 20.5c5.523 0 10-3.925 10-8.75S17.523 3 12 3z" fill="#3A1D1D"/>
+      </svg>
+    </a>
+
+    <a href="#" class="float-btn reserve" aria-label="진료 예약">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+        <rect x="3" y="4" width="18" height="17" rx="2" stroke="white" stroke-width="2"/>
+        <path d="M3 9h18M8 2v4M16 2v4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <path d="M8 13h2M11 13h2M14 13h2M8 16h2M11 16h2" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </a>
+
+    <a href="#footer-info" class="float-btn location" aria-label="오시는 길">
+      <svg width="22" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+        <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z" fill="white"/>
+        <circle cx="12" cy="9" r="2.5" fill="#E8342A"/>
+      </svg>
+    </a>
+  </nav>
+
+  <!-- ③-B About Us -->
+  <section class="about" id="about">
+    <div class="section-inner">
+      <p class="section-tag">About Us</p>
+      <h2 class="section-heading">온 가족의 평생 치과,<br>서울바른후치과</h2>
+      <p class="section-lead">
+        아이부터 어르신까지, 가족 모두가 편안하게 다닐 수 있는 치과를 만들어갑니다.<br>
+        꼼꼼한 진료와 따뜻한 소통으로 오래 함께하겠습니다.
+      </p>
+
+      <!-- 구성원 -->
+      <div class="team-grid">
+        <!-- 의료진 1 -->
+        <div class="team-card">
+          <div class="team-photo" role="img" aria-label="의료진 사진 자리">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" stroke="#6b7ea0" stroke-width="1.5"/>
+              <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" stroke="#6b7ea0" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="team-info">
+            <div class="team-name">원장 ○○○</div>
+            <div class="team-role">대표원장 · 전공 입력</div>
+          </div>
+        </div>
+        <!-- 의료진 2 -->
+        <div class="team-card">
+          <div class="team-photo" role="img" aria-label="의료진 사진 자리">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" stroke="#6b7ea0" stroke-width="1.5"/>
+              <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" stroke="#6b7ea0" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="team-info">
+            <div class="team-name">부원장 ○○○</div>
+            <div class="team-role">부원장 · 전공 입력</div>
+          </div>
+        </div>
+        <!-- 의료진 추가 자리 -->
+        <div class="team-card">
+          <div class="team-photo" role="img" aria-label="의료진 사진 자리">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" stroke="#6b7ea0" stroke-width="1.5"/>
+              <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" stroke="#6b7ea0" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="team-info">
+            <div class="team-name">의료진 ○○○</div>
+            <div class="team-role">직함 · 전공 입력</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③-C 첨단 디지털 -->
+  <section class="digital" id="digital">
+    <div class="section-inner">
+      <p class="section-tag">Digital Dentistry</p>
+      <h2 class="section-heading">첨단 디지털 장비</h2>
+      <p class="section-lead">
+        최신 디지털 장비로 더 정확하고, 더 빠르고, 더 편안한 진료를 제공합니다.
+      </p>
+
+      <div class="digital-grid">
+        <div class="digital-card">
+          <div class="digital-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="2" stroke="white" stroke-width="2"/>
+              <path d="M8 10l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>구강 스캐너</h3>
+          <p>인상재 없이 구강 내를 3D로 정밀 스캔해 불편함을 최소화합니다.</p>
+        </div>
+        <div class="digital-card">
+          <div class="digital-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="8" stroke="white" stroke-width="2"/>
+              <path d="M12 8v4l3 3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>CT 3D 촬영</h3>
+          <p>정밀한 3D CT로 치아와 잇몸뼈 상태를 입체적으로 파악합니다.</p>
+        </div>
+        <div class="digital-card">
+          <div class="digital-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V9l-6-6z" stroke="white" stroke-width="2"/>
+              <path d="M9 3v6h6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>당일 보철 CAD/CAM</h3>
+          <p>디지털 설계 + 밀링으로 하루 만에 크라운을 제작합니다.</p>
+        </div>
+        <div class="digital-card">
+          <div class="digital-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>장비명 입력</h3>
+          <p>보유 장비 설명을 여기에 입력하세요.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③-D 평생 예방관리 -->
+  <section class="prevention" id="prevention">
+    <div class="section-inner">
+      <p class="section-tag">Prevention Care</p>
+      <h2 class="section-heading">평생 예방관리 클리닉</h2>
+      <p class="section-lead">치료보다 예방. 정기 검진과 맞춤 관리로 평생 건강한 치아를 지킵니다.</p>
+
+      <div class="prevention-layout">
+        <div class="prevention-steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h3>정밀 구강검진</h3>
+              <p>연 1~2회 구강 전체를 정밀 검사해 문제를 조기에 발견합니다.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h3>스케일링 &amp; 치주관리</h3>
+              <p>정기 스케일링으로 치석을 제거하고 잇몸 건강을 유지합니다.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h3>맞춤 홈케어 교육</h3>
+              <p>올바른 칫솔질·치실 사용법을 1:1로 안내해 드립니다.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <h3>리콜 프로그램</h3>
+              <p>방문 주기 알림 서비스로 빠짐없이 관리받을 수 있습니다.</p>
+            </div>
+          </div>
+        </div>
+        <div class="prevention-visual" role="img" aria-label="예방관리 이미지 자리">
+          <span>이미지 자리</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③-E 임플란트 -->
+  <section class="implant" id="implant">
+    <div class="section-inner">
+      <p class="section-tag">Implant</p>
+      <h2 class="section-heading">임플란트</h2>
+
+      <div class="implant-grid">
+        <div>
+          <p class="implant-desc">
+            자연치아에 가장 가까운 느낌을 드리는 임플란트.
+            서울바른후치과는 풍부한 시술 경험과 디지털 정밀 가이드로
+            안전하고 정확한 결과를 제공합니다.
+          </p>
+          <ul class="implant-features">
+            <li>3D CT + 디지털 가이드 수술로 정밀도 극대화</li>
+            <li>국내외 검증된 임플란트 브랜드 사용</li>
+            <li>뼈이식·무절개 등 다양한 케이스 경험</li>
+            <li>수술 전 1:1 상담 및 맞춤 계획</li>
+            <li>사후 관리 및 정기 점검 시스템</li>
+          </ul>
+          <div class="cta-row">
+            <a href="#" class="btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M8 2v4M16 2v4M3 9h18M3 6a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              상담 예약하기
+            </a>
+            <a href="#about" class="btn-outline">의료진 보기</a>
+          </div>
+        </div>
+
+        <div class="implant-cards">
+          <div class="implant-card">
+            <div class="implant-card-head">일반 임플란트</div>
+            <div class="implant-card-body">
+              충분한 잇몸뼈가 있는 경우 적용하는 표준 시술로,
+              자연치아에 가까운 저작감을 회복합니다.
+            </div>
+          </div>
+          <div class="implant-card">
+            <div class="implant-card-head">뼈이식 임플란트</div>
+            <div class="implant-card-body">
+              잇몸뼈가 부족한 경우 뼈이식을 병행해 견고한 고정력을 확보합니다.
+            </div>
+          </div>
+          <div class="implant-card">
+            <div class="implant-card-head">무절개(플랩리스) 임플란트</div>
+            <div class="implant-card-body">
+              잇몸 절개 없이 시술해 출혈·붓기·통증을 최소화합니다.
+            </div>
+          </div>
+          <div class="implant-card">
+            <div class="implant-card-head">즉시 부하 임플란트</div>
+            <div class="implant-card-body">
+              적합한 조건의 환자에게는 발치 후 당일 임시치아 장착이 가능합니다.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ 맨 아래 정보 칸 -->
+  <footer id="footer-info" class="footer-info">
+    <div class="footer-inner">
+
+      <div>
+        <p class="info-label">진료 시간</p>
+        <table class="hours-table">
+          <tbody>
+            <tr>
+              <td>월 · 화 · 수 · 금</td>
+              <td>09:00 – 18:00</td>
+            </tr>
+            <tr>
+              <td>목요일 (야간진료)</td>
+              <td>09:00 – 20:00</td>
+            </tr>
+            <tr>
+              <td>토요일</td>
+              <td>09:00 – 13:00</td>
+            </tr>
+            <tr>
+              <td>점심시간</td>
+              <td>13:00 – 14:00</td>
+            </tr>
+            <tr class="closed">
+              <td>일요일 · 공휴일</td>
+              <td>휴진</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <p class="info-label">오시는 길</p>
+        <div class="address-block">
+          <strong>서울바른후치과</strong>
+          <p>주소를 입력해 주세요</p>
+          <p>지하철 ○호선 ○번 출구 ○분</p>
+        </div>
+        <div class="phone-num">000·0000·0000</div>
+        <div class="map-area" role="img" aria-label="지도 자리">지도 자리</div>
+      </div>
+
+    </div>
+  </footer>
+
+  <div class="footer-bottom">
+    서울바른후치과 | 대표자 : ○○○ | 사업자등록번호 : 000-00-00000<br>
+    주소 입력 | 전화번호 : 000-0000-0000 | 이메일 : 이메일@주소
+  </div>
+
+  <script>
+    // 스크롤하면 맨 위 메뉴 배경 생김
+    const topbar = document.getElementById('topbar');
+    window.addEventListener('scroll', () => {
+      topbar.classList.toggle('scrolled', window.scrollY > 50);
+    }, { passive: true });
+
+    // 메뉴 열기 · 닫기
+    const navPanel   = document.getElementById('navPanel');
+    const navBackdrop= document.getElementById('navBackdrop');
+    const navClose   = document.getElementById('navClose');
+    const menuBtn    = document.querySelector('.menu-btn');
+
+    function openMenu() {
+      navPanel.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      navClose.focus();
+    }
+    function closeMenu() {
+      navPanel.classList.remove('open');
+      document.body.style.overflow = '';
+      menuBtn.focus();
+    }
+
+    menuBtn.addEventListener('click', openMenu);
+    navClose.addEventListener('click', closeMenu);
+    navBackdrop.addEventListener('click', closeMenu);
+
+    // 메뉴 항목 클릭하면 패널 닫고 스크롤
+    navPanel.querySelectorAll('.nav-items a').forEach(link => {
+      link.addEventListener('click', () => closeMenu());
+    });
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && navPanel.classList.contains('open')) closeMenu();
+    });
+
+    // 모션 줄이기 설정 존중
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    function applyMotion() {
+      const d = navPanel.querySelector('.nav-drawer');
+      const b = navPanel.querySelector('.nav-backdrop');
+      const dur = mq.matches ? '0s' : '';
+      if (d) d.style.transitionDuration = dur;
+      if (b) b.style.transitionDuration = dur;
+    }
+    applyMotion();
+    mq.addEventListener('change', applyMotion);
+  </script>
+
+</body>
+</html>
